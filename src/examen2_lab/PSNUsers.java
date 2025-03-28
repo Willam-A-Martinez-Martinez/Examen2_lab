@@ -8,7 +8,7 @@ import java.util.Date;
 
 public class PSNUsers {
     private RandomAccessFile gestPsn;
-    public HashTable users;
+    private HashTable users;
     private final String ARCHIVO_PSN = "psn.psw";
 
     public PSNUsers() throws FileNotFoundException, IOException {
@@ -23,8 +23,8 @@ public class PSNUsers {
         while (gestPsn.getFilePointer() < gestPsn.length()) {
             long pos = gestPsn.getFilePointer();
             String username = gestPsn.readUTF();
-            int points = gestPsn.readInt();
-            int trophy = gestPsn.readInt();
+            gestPsn.readInt();
+            gestPsn.readInt();
             boolean active = gestPsn.readBoolean();
             if (active) {
                 users.add(username, pos);
@@ -41,8 +41,8 @@ public class PSNUsers {
         while (gestPsn.getFilePointer() < gestPsn.length()) {
             long pos = gestPsn.getFilePointer();
             String username = gestPsn.readUTF();
-            gestPsn.readInt();
-            gestPsn.readInt();
+            int points = gestPsn.readInt();
+            int trophies = gestPsn.readInt();
             boolean active = gestPsn.readBoolean();
             
             if (username.equals(user)) {
@@ -50,9 +50,9 @@ public class PSNUsers {
                     return false;
                 }
                 gestPsn.seek(pos);
-                gestPsn.writeUTF(user);
-                gestPsn.writeInt(0);
-                gestPsn.writeInt(0);
+                gestPsn.writeUTF(username);
+                gestPsn.writeInt(points);
+                gestPsn.writeInt(trophies);
                 gestPsn.writeBoolean(true);
                 users.add(user, pos);
                 return true;
@@ -75,10 +75,16 @@ public class PSNUsers {
         long pos = users.search(user);
         if (pos != -1) {
             gestPsn.seek(pos);
-            gestPsn.readUTF();
-            gestPsn.readInt();
-            gestPsn.readInt();
+            String username = gestPsn.readUTF();
+            int points = gestPsn.readInt();
+            int trophies = gestPsn.readInt();
+            
+            gestPsn.seek(pos);
+            gestPsn.writeUTF(username);
+            gestPsn.writeInt(points);
+            gestPsn.writeInt(trophies);
             gestPsn.writeBoolean(false);
+            
             users.remove(user);
         }
     }

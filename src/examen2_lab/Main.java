@@ -3,20 +3,11 @@ package examen2_lab;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.io.IOException;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.*;
 
 public class Main {
     private static PSNUsers psn;
-    private static JTextArea outputArea;
+    private static JTextArea salidaArea;
 
     public static void main(String[] args) {
         try {
@@ -33,29 +24,28 @@ public class Main {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(800, 600);
         frame.setLocationRelativeTo(null);
+        
         JTabbedPane tabbedPane = new JTabbedPane();
-        JPanel userPanel = new JPanel(new BorderLayout());
-        JPanel userForm = new JPanel(new GridLayout(3, 2, 5, 5));
+        
+        JPanel panelUsuario = new JPanel(new BorderLayout());
+        JPanel users = new JPanel(new GridLayout(2, 2, 5, 5));
         JTextField userField = new JTextField();
         JButton addUserBtn = new JButton("Agregar Usuario");
         JButton deactivateBtn = new JButton("Desactivar Usuario");
+        
+        users.add(new JLabel("Nombre de usuario:"));
+        users.add(userField);
+        users.add(addUserBtn);
+        users.add(deactivateBtn);
+        
         JPanel trophyPanel = new JPanel(new BorderLayout());
         JPanel trophyForm = new JPanel(new GridLayout(5, 2, 5, 5));
         JTextField trophyUserField = new JTextField();
         JTextField gameField = new JTextField();
         JTextField trophyNameField = new JTextField();
-        JComboBox<Trophy> trophyTypeCombo = new JComboBox<>(Trophy.values());
+        JComboBox<Trophy> trophyComboBox = new JComboBox<>(Trophy.values());
         JButton addTrophyBtn = new JButton("Agregar Trofeo");
-        JPanel infoPanel = new JPanel(new BorderLayout());
-        JPanel infoForm = new JPanel(new GridLayout(2, 2, 5, 5));
-        JTextField infoUserField = new JTextField();
-        JButton showInfoBtn = new JButton("Mostrar Información");
-
-        userForm.add(new JLabel("Nombre de usuario:"));
-        userForm.add(userField);
-        userForm.add(addUserBtn);
-        userForm.add(deactivateBtn);
-
+        
         trophyForm.add(new JLabel("Usuario:"));
         trophyForm.add(trophyUserField);
         trophyForm.add(new JLabel("Juego:"));
@@ -63,82 +53,81 @@ public class Main {
         trophyForm.add(new JLabel("Nombre del trofeo:"));
         trophyForm.add(trophyNameField);
         trophyForm.add(new JLabel("Tipo de trofeo:"));
-        trophyForm.add(trophyTypeCombo);
+        trophyForm.add(trophyComboBox);
+        trophyForm.add(new JLabel(""));
         trophyForm.add(addTrophyBtn);
-
+        
+        JPanel infoPanel = new JPanel(new BorderLayout());
+        JPanel infoForm = new JPanel(new GridLayout(2, 2, 5, 5));
+        JTextField infoUserField = new JTextField();
+        JButton showInfoBtn = new JButton("Mostrar Información");
+        
         infoForm.add(new JLabel("Usuario a consultar:"));
         infoForm.add(infoUserField);
+        infoForm.add(new JLabel(""));
         infoForm.add(showInfoBtn);
-
-        outputArea = new JTextArea();
-        outputArea.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(outputArea);
-
+        
+        salidaArea = new JTextArea();
+        salidaArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(salidaArea);
+        
         addUserBtn.addActionListener(e -> {
             try {
                 if (psn.addUser(userField.getText())) {
-                    outputArea.setText("Usuario agregado: " + userField.getText());
+                    salidaArea.setText("Usuario agregado: " + userField.getText());
                 } else {
-                    outputArea.setText("Error: El usuario ya existe");
+                    salidaArea.setText("Error: El usuario ya existe");
                 }
             } catch (IOException ex) {
-                outputArea.setText("Error: " + ex.getMessage());
+                salidaArea.setText("Error: " + ex.getMessage());
             }
         });
 
         deactivateBtn.addActionListener(e -> {
             try {
-                if(psn.users.search(userField.getText())!=-1){
-                    psn.deactivateUser(userField.getText());
-                    outputArea.setText("Usuario desactivado: " + userField.getText());
-                }else{
-                    outputArea.setText("Error: usuario no existe!");
-                }
+                psn.deactivateUser(userField.getText());
+                salidaArea.setText("Usuario desactivado: " + userField.getText());
             } catch (IOException ex) {
-                outputArea.setText("Error: " + ex.getMessage());
+                salidaArea.setText("Error: " + ex.getMessage());
             }
-            
         });
 
         addTrophyBtn.addActionListener(e -> {
-            outputArea.setText("");
-            if(!trophyUserField.getText().equals("") && !gameField.getText().equals("") && !trophyNameField.getText().equals("")) {
+            salidaArea.setText("");
+            if(!trophyUserField.getText().isEmpty() && !gameField.getText().isEmpty() && !trophyNameField.getText().isEmpty()) {
                 try {
                     psn.addTrophieTo(
                         trophyUserField.getText(),
-                        gameField      .getText(),
+                        gameField.getText(),
                         trophyNameField.getText(),
-                        (Trophy)trophyTypeCombo.getSelectedItem()
+                        (Trophy)trophyComboBox.getSelectedItem()
                     );
-                    outputArea.setText("Trofeo agregado a " + trophyUserField.getText());
+                    salidaArea.setText("Trofeo agregado a " + trophyUserField.getText());
+                    trophyUserField.setText("");
+                    gameField.setText("");
+                    trophyNameField.setText("");
                 } catch (IOException ex) {
-                    outputArea.setText("Error: " + ex.getMessage());
+                    salidaArea.setText("Error: " + ex.getMessage());
                 }
-            }
-            if(trophyUserField.getText().equals("")) {
-                outputArea.append("Error: Debe ingresar un nombre de usuario\n");
-                trophyUserField.setText("");
-            }
-            if(gameField.getText().equals("")) {
-                outputArea.append("Error: Debe ingresar un nombre de juego\n");
-                gameField.setText("");
-            }
-            if(trophyNameField.getText().equals("")) {
-                outputArea.append("Error: Debe ingresar un nombre para el trofeo\n");
-                trophyNameField.setText("");
+            } else {
+                StringBuilder error = new StringBuilder("Error:");
+                if(trophyUserField.getText().isEmpty()) error.append("\n- Nombre de usuario");
+                if(gameField.getText().isEmpty()) error.append("\n- Nombre del juego");
+                if(trophyNameField.getText().isEmpty()) error.append("\n- Nombre del trofeo");
+                salidaArea.setText(error.toString());
             }
         });
 
         showInfoBtn.addActionListener(e -> {
             try {
                 String info = psn.playerInfo(infoUserField.getText());
-                outputArea.setText(info);
+                salidaArea.setText(info);
             } catch (IOException ex) {
-                outputArea.setText("Error: " + ex.getMessage());
+                salidaArea.setText("Error: " + ex.getMessage());
             }
         });
 
-        userPanel.add(userForm, BorderLayout.NORTH);
+        panelUsuario.add(users, BorderLayout.NORTH);
         trophyPanel.add(trophyForm, BorderLayout.NORTH);
         infoPanel.add(infoForm, BorderLayout.NORTH);
 
@@ -148,20 +137,16 @@ public class Main {
             gameField.setText("");
             trophyNameField.setText("");
             infoUserField.setText("");
-            
-            trophyTypeCombo.setSelectedIndex(0);
+            trophyComboBox.setSelectedIndex(0);
         });
         
-        tabbedPane.addTab("Usuarios", userPanel);
+        tabbedPane.addTab("Usuarios", panelUsuario);
         tabbedPane.addTab("Trofeos", trophyPanel);
         tabbedPane.addTab("Información", infoPanel);
         
-        
-
         frame.getContentPane().setLayout(new BorderLayout());
         frame.getContentPane().add(tabbedPane, BorderLayout.NORTH);
         frame.getContentPane().add(scrollPane, BorderLayout.CENTER);
-
         frame.setVisible(true);
     }
 }
